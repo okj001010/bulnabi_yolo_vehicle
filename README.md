@@ -19,8 +19,8 @@
 # Build
 
 ```
-colcon build --symlink-install --packages-select my_bboxes_msg
-colcon build --symlink-install
+colcon build --symlink-install --packages-select my_bboxes_msg       // cbp my_bboxes_msg
+colcon build --symlink-install                                       // cba
 source ./install/local_setup.bash
 ```
 
