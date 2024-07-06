@@ -2,7 +2,6 @@ import os
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
-from ament_index_python.packages import get_package_share_directory
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
 from my_bboxes_msg.msg import YoloObstacle, YoloTarget, VehiclePhase
@@ -23,8 +22,7 @@ class YoloDetector(Node):
             depth=1
         )
         
-        package_share_directory = get_package_share_directory('yolo_detection')
-        model_path = os.path.join(package_share_directory, 'config', 'best.pt')
+        model_path = os.path.join(os.getcwd(), 'src/yolo_detection/config/best.pt')
         self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path, force_reload=True)
         
         # create publishers
