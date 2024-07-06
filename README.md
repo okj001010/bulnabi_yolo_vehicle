@@ -1,67 +1,87 @@
-# YOLOv5-ROS
+# Requirements
 
-[YOLOv5](https://github.com/ultralytics/yolov5) + ROS2 object detection package
+  1. YOLOv5 download: https://github.com/ultralytics/yolov5
+  2. pytorch
+  3. opencv
+  4. v4l2_camera
 
-This program changes the input of detect.py (ultralytics/yolov5) to `sensor_msgs/Image` of ROS2.
-
-<br>
-
-Maybe [this one](https://github.com/Alpaca-zip/ultralytics_ros) is easier to use.
-
-<br>
-
-## Installation
-
-```bash
-mkdir -p ws_yolov5/src
-cd ws_yolov5/src
-
-git clone https://github.com/Ar-Ray-code/YOLOv5-ROS.git
-git clone https://github.com/Ar-Ray-code/bbox_ex_msgs.git
-
-pip3 install -r ./YOLOv5-ROS/requirements.txt
-
-colcon build --symlink-install
-```
-
-<br>
-
-## Demo
-
-```bash
-cd ws_yolov5/
-source ./install/setup.bash
-ros2 launch yolov5_ros yolov5s_simple.launch.py
-```
-
-<br>
+      ```
+      sudo apt update
+      sudo apt install ros-${ROS_DISTRO}-v4l2-camera
+      ```
+  5. (선택사항) v4l2-ctl: change v4l2_camera settings
+      ```
+      sudo apt install v4l-utils
+      
+      v4l2-ctl -d /dev/video0 --list-formats-ex   # camera formets 확인
+      v4l2-ctl -d /dev/video0 --set-fmt-video=width=640,height=480   # change settings
+      ```
 
 
-## Requirements
-- ROS2 Foxy
-- OpenCV 4
-- PyTorch
-- bbox_ex_msgs
 
-## Topic
+# Installation
 
-### Subscribe
-- image_raw (`sensor_msgs/Image`)
 
-### Publish
-- yolov5/image_raw : Resized image (`sensor_msgs/Image`)
-- yololv5/bounding_boxes : Output BoundingBoxes like darknet_ros_msgs (`bboxes_ex_msgs/BoundingBoxes`)
+  ```
+  cd workspace
+  cd src 
+  git clone https://github.com/gbll0305/yolov5_detection.git
+  ```
 
-※ If you want to use `darknet_ros_msgs` , replace `bboxes_ex_msgs` with `darknet_ros_msgs`.
 
-## About YOLOv5 and contributers
+  ### [수정이 필요한 부분] 
+  
+  /yolo_detection/yolo_detection/yolo_detector.py
+  
+  1. yolov5 model 가져오는 부분의 경로 수정(Yolo 학습 파일의 위치를 넣어줘야 함)
+     
+     ```
+     # define model path and load the model
+     self.declare_parameter('model_path', '/home/chaewon/yolov5/best.pt') #best.pt의 경로를 수정
+     model_path = self.get_parameter('model_path').get_parameter_value().string_value
+     self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path, force_reload=True)
+     ```
 
-- [YOLOv5 : GitHub](https://github.com/ultralytics/yolov5)
-- [Glenn Jocher : GitHub](https://github.com/glenn-jocher)
+     
+  2. yolov5의 카메라 정보를 저장하는 부분의 경로 수정(목표물 사진을 저장할 파일 생성 필요)
+     
+     ```
+     # create target_capture folder, which is used to save target images
+     self.target_capture_folder = '/home/chaewon/workspace_ros/target_capture' # 저장할 위치 수정
+     os.makedirs(self.target_capture_folder, exist_ok=True)
+     ```
 
-### What is YOLOv5 🚀
+  ```
+  colcon build --symlink-install --packages-select my_bboxes_msg
+  colcon build --symlink-install
+  source ./install/local_setup.bash
+  ```
 
-YOLOv5 is the most useful object detection program in terms of speed of CPU inference and compatibility with PyTorch.
 
-> Shortly after the release of YOLOv4 Glenn Jocher introduced YOLOv5 using the Pytorch framework.
-The open source code is available on GitHub
+
+
+# Launch
+
+  ```
+  # run each nodes saperately
+  ros2 run v4l2_camera v4l2_camera_node
+  ros2 run yolo_detection yolo_detector
+  
+  # use launch file
+  ros2 run yolo_detection yolo_detedtor.launch.py
+  ```
+
+
+
+# Camera settings
+  Use v4l2-ctl
+  
+  ```
+  # installation
+  sudo apt install v4l-utils
+  # change camera settings
+  v4l2-ctl -d /dev/video0 --set-fmt-video=width=640,height=480
+  ```
+     
+
+  
