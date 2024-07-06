@@ -21,7 +21,7 @@ def generate_launch_description():
     
     vehicle_controller = launch_ros.actions.Node(
         package="vehicle_controller", executable="vehicle_controller", 
-	parameters=[
+	    parameters=[
             '~/ws_vehicle_controller/src/vehicle_controller/config/waypoint.yaml'
         ],
     )

@@ -1,6 +1,8 @@
 import os
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
+from ament_index_python.packages import get_package_share_directory
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
 from my_bboxes_msg.msg import YoloObstacle, YoloTarget, VehiclePhase
@@ -21,9 +23,8 @@ class YoloDetector(Node):
             depth=1
         )
         
-        # define model path and load the model (ex: /home/chaewon/yolov5/best.pt)
-        self.declare_parameter('model_path', '/home/chaewon/yolov5/best.pt')
-        model_path = self.get_parameter('model_path').get_parameter_value().string_value
+        package_share_directory = get_package_share_directory('yolo_detection')
+        model_path = os.path.join(package_share_directory, 'config', 'best.pt')
         self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path, force_reload=True)
         
         # create publishers
@@ -36,7 +37,7 @@ class YoloDetector(Node):
         self.bridge = CvBridge()
         
         # create target_capture folder, which is used to save target images
-        self.target_capture_folder = '/home/chaewon/workspace_ros/target_capture'
+        self.target_capture_folder = os.path.join(os.getcwd(), 'src/yolo_detection/config/target_capture')
         os.makedirs(self.target_capture_folder, exist_ok=True)
         
         # timer for publishing target image
